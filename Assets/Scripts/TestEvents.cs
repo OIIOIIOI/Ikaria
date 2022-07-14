@@ -7,14 +7,14 @@ public class TestEvents : MonoBehaviour
     
     private void OnEnable()
     {
-        GameLoopManager.startFallEvent += StartFallHandler;
-        GameLoopManager.startStasisEvent += StartStasisHandler;
+        GameLoopManager.StartFallEvent += StartFallHandler;
+        GameLoopManager.StartStasisEvent += StartStasisHandler;
     }
     
     private void OnDisable()
     {
-        GameLoopManager.startFallEvent -= StartFallHandler;
-        GameLoopManager.startStasisEvent -= StartStasisHandler;
+        GameLoopManager.StartFallEvent -= StartFallHandler;
+        GameLoopManager.StartStasisEvent -= StartStasisHandler;
     }
 
     private void StartFallHandler()

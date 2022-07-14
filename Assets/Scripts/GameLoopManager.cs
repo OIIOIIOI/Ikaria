@@ -26,20 +26,11 @@ public class GameLoopManager : MonoBehaviour
     
     /* Delegates/Events ----------- */
 
-    public delegate void StartFallEvent();
-    public static event StartFallEvent startFallEvent;
-
-    public delegate void StartStasisEvent();
-    public static event StartStasisEvent startStasisEvent;
-
-    public delegate void StartRepairEvent();
-    public static event StartRepairEvent startRepairEvent;
-
-    public delegate void StartResolveEvent();
-    public static event StartResolveEvent startResolveEvent;
-
-    public delegate void StartPrepareEvent();
-    public static event StartPrepareEvent startPrepareEvent;
+    public static event Action StartFallEvent;
+    public static event Action StartStasisEvent;
+    public static event Action StartRepairEvent;
+    public static event Action StartResolveEvent;
+    public static event Action StartPrepareEvent;
 
     /* TMP ----------- */
 
@@ -222,7 +213,7 @@ public class GameLoopManager : MonoBehaviour
         state = LoopState.Fall;
         
         // Dispatch event
-        startFallEvent?.Invoke();
+        StartFallEvent?.Invoke();
         
         audioLoopsLeft = statesDurations[state];
         StartLoop();
@@ -235,7 +226,7 @@ public class GameLoopManager : MonoBehaviour
         state = LoopState.Pause;
         
         // Dispatch event
-        startStasisEvent?.Invoke();
+        StartStasisEvent?.Invoke();
         
         if (NeedsRepair())
             StartRepair();
@@ -256,7 +247,7 @@ public class GameLoopManager : MonoBehaviour
         state = LoopState.Repair;
         
         // Dispatch event
-        startRepairEvent?.Invoke();
+        StartRepairEvent?.Invoke();
 
         audioLoopsLeft = statesDurations[state];
         StartLoop();
@@ -285,7 +276,7 @@ public class GameLoopManager : MonoBehaviour
         state = LoopState.Resolve;
         
         // Dispatch event
-        startResolveEvent?.Invoke();
+        StartResolveEvent?.Invoke();
 
         audioLoopsLeft = statesDurations[state];
         StartLoop();
@@ -312,7 +303,7 @@ public class GameLoopManager : MonoBehaviour
         state = LoopState.Prepare;
         
         // Dispatch event
-        startPrepareEvent?.Invoke();
+        StartPrepareEvent?.Invoke();
 
         audioLoopsLeft = statesDurations[state];
         StartLoop();
