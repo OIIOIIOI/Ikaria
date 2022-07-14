@@ -7,6 +7,8 @@ using Random = UnityEngine.Random;
 
 public class GameLoopManager : MonoBehaviour
 {
+    
+    public static GameLoopManager instance;
 
     public Text debug;
     public Image mainProgressBar;
@@ -41,6 +43,11 @@ public class GameLoopManager : MonoBehaviour
     
     private void Awake()
     {
+        if (instance == null)
+            instance = this;
+        else if (instance != this)
+            Destroy(gameObject);
+        
         tmpNeedsRepair = Random.value > 0.5f;
         tmpNeedsResolve = Random.value > 0.5f;
         
@@ -64,14 +71,14 @@ public class GameLoopManager : MonoBehaviour
 
     private void Update()
     {
-        debug.text = "Phase: "+state+"\r\nLoops left: "+audioLoopsLeft+"\r\nLoop duration: "+audioLoopDuration+"\r\nAudio time: "+audioSource.time;
+        debug.text = "Cycle "+ (currentCycle+1)+"/"+cyclesBeforeGameOver+" ("+GetCyclesProgress()+")"+"\r\nPhase: "+state+"\r\nLoops left: "+audioLoopsLeft+"\r\nLoop duration: "+audioLoopDuration+"\r\nAudio time: "+audioSource.time;
         
         float progress = GetCurrentPhaseProgress();
         mainProgressBar.rectTransform.localScale = new Vector3(progress, 1f, 1f);
         progress = GetCurrentStateProgress();
         secondaryProgressBar.rectTransform.localScale = new Vector3(progress, 1f, 1f);
     }
-    
+
     /* LOOP ============================================ */
 
     private void StartLoop()
@@ -199,6 +206,11 @@ public class GameLoopManager : MonoBehaviour
         
         return state == LoopState.Fall ? p : 1f - p;
     }
+
+    public float GetCyclesProgress()
+    {
+        return (float)cyclesBeforeGameOver / (float)(currentCycle+1);
+    }
     
     /* FALL ============================================ */
 
@@ -207,8 +219,8 @@ public class GameLoopManager : MonoBehaviour
         tmpNeedsRepair = Random.value > 0.5f;
         tmpNeedsResolve = Random.value > 0.5f;
         
-        Debug.Log("--------------------------------------------");
-        Debug.Log("FALLING!");
+        // Debug.Log("--------------------------------------------");
+        // Debug.Log("FALLING!");
 
         state = LoopState.Fall;
         
@@ -227,6 +239,8 @@ public class GameLoopManager : MonoBehaviour
         
         // Dispatch event
         StartStasisEvent?.Invoke();
+        
+        currentCycle++;
         
         if (NeedsRepair())
             StartRepair();
@@ -336,7 +350,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void CheckEndGameConditions()
     {
-        Debug.Log("END GAME:");
+        // Debug.Log("END GAME:");
         
         // TODO If enough knowledge, good ending
         // TODO If not, bad ending

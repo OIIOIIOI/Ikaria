@@ -41,3 +41,30 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Clouds Back
+    uniqueID: 1221693067
+    locked: 0
+  - name: BackBuildings
+    uniqueID: 1375610515
+    locked: 0
+  - name: BackBridges
+    uniqueID: 3280538267
+    locked: 0
+  - name: Core
+    uniqueID: 127043873
+    locked: 0
+  - name: FrontBridges
+    uniqueID: 2559880717
+    locked: 0
+  - name: Front
+    uniqueID: 754669203
+    locked: 0
+  - name: Debris
+    uniqueID: 689135191
+    locked: 0
+  - name: Clouds Front
+    uniqueID: 698099193
+    locked: 0
+  - name: Icons
+    uniqueID: 413053815
+    locked: 0
