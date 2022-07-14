@@ -22,11 +22,31 @@ public class GameLoopManager : MonoBehaviour
     private float audioLoopDuration;
     private int audioLoopsLeft;
     
-    [HideInInspector]
     private Dictionary<LoopState, int> statesDurations;
+    
+    /* Delegates/Events ----------- */
+
+    public delegate void StartFallEvent();
+    public static event StartFallEvent startFallEvent;
+
+    public delegate void StartStasisEvent();
+    public static event StartStasisEvent startStasisEvent;
+
+    public delegate void StartRepairEvent();
+    public static event StartRepairEvent startRepairEvent;
+
+    public delegate void StartResolveEvent();
+    public static event StartResolveEvent startResolveEvent;
+
+    public delegate void StartPrepareEvent();
+    public static event StartPrepareEvent startPrepareEvent;
+
+    /* TMP ----------- */
 
     private bool tmpNeedsRepair;
     private bool tmpNeedsResolve;
+    
+    /* BASICS ============================================ */
     
     private void Awake()
     {
@@ -36,7 +56,7 @@ public class GameLoopManager : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
 
         statesDurations = new Dictionary<LoopState, int>(){
-            {LoopState.Fall, 1},
+            {LoopState.Fall, 2},
             {LoopState.Repair, 1},
             {LoopState.Resolve, 1},
             {LoopState.Prepare, 1},
@@ -201,15 +221,21 @@ public class GameLoopManager : MonoBehaviour
 
         state = LoopState.Fall;
         
+        // Dispatch event
+        startFallEvent?.Invoke();
+        
         audioLoopsLeft = statesDurations[state];
         StartLoop();
     }
 
     private void EndFall()
     {
-        Debug.Log("STABILIZING...");
+        // Debug.Log("STABILIZING...");
 
         state = LoopState.Pause;
+        
+        // Dispatch event
+        startStasisEvent?.Invoke();
         
         if (NeedsRepair())
             StartRepair();
@@ -225,9 +251,12 @@ public class GameLoopManager : MonoBehaviour
 
     private void StartRepair()
     {
-        Debug.Log("STARTING REPAIR");
+        // Debug.Log("STARTING REPAIR");
 
         state = LoopState.Repair;
+        
+        // Dispatch event
+        startRepairEvent?.Invoke();
 
         audioLoopsLeft = statesDurations[state];
         StartLoop();
@@ -235,7 +264,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void EndRepair()
     {
-        Debug.Log("REPAIR ENDING");
+        // Debug.Log("REPAIR ENDING");
         
         state = LoopState.Pause;
         
@@ -251,9 +280,12 @@ public class GameLoopManager : MonoBehaviour
 
     private void StartResolve()
     {
-        Debug.Log("STARTING RESOLVE");
+        // Debug.Log("STARTING RESOLVE");
 
         state = LoopState.Resolve;
+        
+        // Dispatch event
+        startResolveEvent?.Invoke();
 
         audioLoopsLeft = statesDurations[state];
         StartLoop();
@@ -261,7 +293,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void EndResolve()
     {
-        Debug.Log("RESOLVE ENDING");
+        // Debug.Log("RESOLVE ENDING");
         
         state = LoopState.Pause;
         
@@ -275,9 +307,12 @@ public class GameLoopManager : MonoBehaviour
 
     private void StartPrepare()
     {
-        Debug.Log("STARTING PREPARE");
+        // Debug.Log("STARTING PREPARE");
 
         state = LoopState.Prepare;
+        
+        // Dispatch event
+        startPrepareEvent?.Invoke();
 
         audioLoopsLeft = statesDurations[state];
         StartLoop();
@@ -285,7 +320,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void EndPrepare()
     {
-        Debug.Log("PREPARE ENDING");
+        // Debug.Log("PREPARE ENDING");
         
         state = LoopState.Pause;
         
