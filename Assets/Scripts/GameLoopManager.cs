@@ -7,20 +7,29 @@ using Random = UnityEngine.Random;
 public class GameLoopManager : MonoBehaviour
 {
     
-    private enum LoopState { Pause, Fall, Stasis };
+    private enum LoopState { Pause, Fall, Repair, Resolve, Prepare };
 
     private LoopState state = LoopState.Pause;
     private int currentCycle = 0;
+    private int cyclesBeforeGameOver = 3;
 
     private AudioSource audioSource;
     private float audioLoopDuration;
-    private int fallDurationInAudioLoops = 1;
-    private int stasisDurationInAudioLoops = 2;
     private int audioLoopsLeft;
-
+    
+    [HideInInspector]
+    private Dictionary<LoopState, int> statesDurations;
+    
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();
+        
+        statesDurations = new Dictionary<LoopState, int>(){
+            {LoopState.Fall, 2},
+            {LoopState.Repair, 1},
+            {LoopState.Resolve, 1},
+            {LoopState.Prepare, 1},
+        };
     }
 
     private void Start()
@@ -32,7 +41,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void StartLoop()
     {
-        Debug.Log("Starting audio loop");
+        // Debug.Log("Starting audio loop");
         
         audioSource.loop = true;
         audioSource.Play();
@@ -48,7 +57,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void AudioLoopComplete()
     {
-        Debug.Log("Audio loop complete!");
+        // Debug.Log("Audio loop complete!");
         
         audioLoopsLeft--;
         if (audioLoopsLeft > 0)
@@ -62,7 +71,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void PhaseComplete()
     {
-        Debug.Log("PHASE COMPLETE!");
+        // Debug.Log("PHASE COMPLETE!");
 
         switch (state)
         {
@@ -70,19 +79,30 @@ public class GameLoopManager : MonoBehaviour
                 EndFall();
                 break;
             
-            case LoopState.Stasis:
-                EndStasis();
+            case LoopState.Repair:
+                EndRepair();
+                break;
+            
+            case LoopState.Resolve:
+                EndResolve();
+                break;
+            
+            case LoopState.Prepare:
+                EndPrepare();
                 break;
         }
     }
+    
+    /* FALL ============================================ */
 
     private void StartFall()
     {
+        Debug.Log("--------------------------------------------");
         Debug.Log("FALLING!");
 
         state = LoopState.Fall;
         
-        audioLoopsLeft = fallDurationInAudioLoops;
+        audioLoopsLeft = statesDurations[state];
         StartLoop();
     }
 
@@ -92,31 +112,99 @@ public class GameLoopManager : MonoBehaviour
 
         state = LoopState.Pause;
         
-        StartStasis();
+        if (NeedsRepair())
+            StartRepair();
+        else if (NeedsResolve())
+            StartResolve();
+        else if (currentCycle < cyclesBeforeGameOver)
+            StartPrepare();
+        else
+            CheckEndGameConditions();
     }
+    
+    /* REPAIR ============================================ */
 
-    private void StartStasis()
+    private void StartRepair()
     {
-        Debug.Log("STASIS ACTIVE!");
+        Debug.Log("STARTING REPAIR");
 
-        state = LoopState.Stasis;
+        state = LoopState.Repair;
 
-        audioLoopsLeft = stasisDurationInAudioLoops;
+        audioLoopsLeft = statesDurations[state];
         StartLoop();
     }
 
-    private void EndStasis()
+    private void EndRepair()
     {
-        Debug.Log("STASIS ENDING...");
+        Debug.Log("REPAIR ENDING");
         
         state = LoopState.Pause;
-
-        currentCycle++;
         
-        if (currentCycle < 2)
-            StartFall();
+        if (NeedsResolve())
+            StartResolve();
+        else if (currentCycle < cyclesBeforeGameOver)
+            StartPrepare();
         else
             CheckEndGameConditions();
+    }
+    
+    /* RESOLVE ============================================ */
+
+    private void StartResolve()
+    {
+        Debug.Log("STARTING RESOLVE");
+
+        state = LoopState.Resolve;
+
+        audioLoopsLeft = statesDurations[state];
+        StartLoop();
+    }
+
+    private void EndResolve()
+    {
+        Debug.Log("RESOLVE ENDING");
+        
+        state = LoopState.Pause;
+        
+        if (currentCycle < cyclesBeforeGameOver)
+            StartPrepare();
+        else
+            CheckEndGameConditions();
+    }
+    
+    /* PREPARE ============================================ */
+
+    private void StartPrepare()
+    {
+        Debug.Log("STARTING PREPARE");
+
+        state = LoopState.Prepare;
+
+        audioLoopsLeft = statesDurations[state];
+        StartLoop();
+    }
+
+    private void EndPrepare()
+    {
+        Debug.Log("PREPARE ENDING");
+        
+        state = LoopState.Pause;
+        
+        StartFall();
+    }
+    
+    /* CHECKS & END GAME ============================================ */
+
+    private bool NeedsRepair()
+    {
+        // TODO Get actual info from somewhere
+        return Random.value > 0.5f;
+    }
+    
+    private bool NeedsResolve()
+    {
+        // TODO Get actual info from somewhere
+        return Random.value > 0.5f;
     }
 
     private void CheckEndGameConditions()
@@ -125,11 +213,6 @@ public class GameLoopManager : MonoBehaviour
         
         // TODO If enough knowledge, good ending
         // TODO If not, bad ending
-    }
-
-    private void Update()
-    {
-        
     }
 
 }
