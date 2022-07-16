@@ -33,6 +33,8 @@ public class GameLoopManager : MonoBehaviour
     public static event Action StartRepairEvent;
     public static event Action StartResolveEvent;
     public static event Action StartPrepareEvent;
+    public static event Action WinEvent;
+    public static event Action LoseEvent;
 
     /* TMP ----------- */
     
@@ -364,12 +366,20 @@ public class GameLoopManager : MonoBehaviour
     private void Win()
     {
         Debug.Log("END GAME: WIN");
+        
+        // Dispatch event
+        WinEvent?.Invoke();
+        
         // TODO Good ending
     }
 
     private void Lose()
     {
         Debug.Log("END GAME: LOSE");
+        
+        // Dispatch event
+        LoseEvent?.Invoke();
+        
         // TODO Bad ending
     }
 
