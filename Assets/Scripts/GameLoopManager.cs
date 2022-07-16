@@ -35,9 +35,11 @@ public class GameLoopManager : MonoBehaviour
     public static event Action StartPrepareEvent;
 
     /* TMP ----------- */
-
-    private bool tmpNeedsRepair;
-    private bool tmpNeedsResolve;
+    
+    // TODO Remove this when plugged
+    private bool tmpNeedsRepair = false;
+    private bool tmpNeedsResolve = false;
+    private bool tmpHasEnoughKnowledge = false;
     
     /* BASICS ============================================ */
     
@@ -47,9 +49,6 @@ public class GameLoopManager : MonoBehaviour
             instance = this;
         else if (instance != this)
             Destroy(gameObject);
-        
-        tmpNeedsRepair = Random.value > 0.5f;
-        tmpNeedsResolve = Random.value > 0.5f;
         
         audioSource = GetComponent<AudioSource>();
 
@@ -66,12 +65,14 @@ public class GameLoopManager : MonoBehaviour
         state = LoopState.Pause;
 
         // Wait for a bit or else the first loop will be out of sync
-        Invoke(nameof(StartFall), 3.0f);
+        Invoke(nameof(StartPrepare), 3.0f);
     }
 
     private void Update()
     {
-        debug.text = "Cycle "+ (currentCycle+1)+"/"+cyclesBeforeGameOver+" ("+GetCyclesProgress()+")"+"\r\nPhase: "+state+"\r\nLoops left: "+audioLoopsLeft+"\r\nLoop duration: "+audioLoopDuration+"\r\nAudio time: "+audioSource.time;
+        debug.text = "Cycle " + currentCycle + "/" + cyclesBeforeGameOver + "(" + Mathf.Floor(GetCyclesProgress()*100) + "%)" +
+                     "\r\nPhase: " + state + "\r\nLoops left: " + audioLoopsLeft + "\r\nLoop duration: " +
+                     audioLoopDuration + "\r\nAudio time: " + audioSource.time;
         
         float progress = GetCurrentPhaseProgress();
         mainProgressBar.rectTransform.localScale = new Vector3(progress, 1f, 1f);
@@ -113,7 +114,7 @@ public class GameLoopManager : MonoBehaviour
 
     private void PhaseComplete()
     {
-        // Debug.Log("PHASE COMPLETE!");
+        Debug.Log("PHASE COMPLETE! " + state);
 
         switch (state)
         {
@@ -209,7 +210,7 @@ public class GameLoopManager : MonoBehaviour
 
     public float GetCyclesProgress()
     {
-        return (float)cyclesBeforeGameOver / (float)(currentCycle+1);
+        return currentCycle == 0 ? 0f : (float)currentCycle / (float)cyclesBeforeGameOver;
     }
     
     /* FALL ============================================ */
@@ -218,6 +219,9 @@ public class GameLoopManager : MonoBehaviour
     {
         tmpNeedsRepair = Random.value > 0.5f;
         tmpNeedsResolve = Random.value > 0.5f;
+        tmpHasEnoughKnowledge = Random.value > 0.5f;
+        // tmpNeedsRepair = true;
+        // tmpNeedsResolve = true;
         
         // Debug.Log("--------------------------------------------");
         // Debug.Log("FALLING!");
@@ -240,16 +244,14 @@ public class GameLoopManager : MonoBehaviour
         // Dispatch event
         StartStasisEvent?.Invoke();
         
-        currentCycle++;
-        
         if (NeedsRepair())
             StartRepair();
         else if (NeedsResolve())
             StartResolve();
         else if (currentCycle < cyclesBeforeGameOver)
-            StartPrepare();
+            WinOrPrepare();
         else
-            CheckEndGameConditions();
+            Lose();
     }
     
     /* REPAIR ============================================ */
@@ -276,9 +278,9 @@ public class GameLoopManager : MonoBehaviour
         if (NeedsResolve())
             StartResolve();
         else if (currentCycle < cyclesBeforeGameOver)
-            StartPrepare();
+            WinOrPrepare();
         else
-            CheckEndGameConditions();
+            Lose();
     }
     
     /* RESOLVE ============================================ */
@@ -303,16 +305,18 @@ public class GameLoopManager : MonoBehaviour
         state = LoopState.Pause;
         
         if (currentCycle < cyclesBeforeGameOver)
-            StartPrepare();
+            WinOrPrepare();
         else
-            CheckEndGameConditions();
+            Lose();
     }
     
     /* PREPARE ============================================ */
 
     private void StartPrepare()
     {
-        // Debug.Log("STARTING PREPARE");
+        Debug.Log("STARTING PREPARE, CYCLE++");
+        
+        currentCycle++;
 
         state = LoopState.Prepare;
         
@@ -348,12 +352,25 @@ public class GameLoopManager : MonoBehaviour
         return tmpNeedsResolve;
     }
 
-    private void CheckEndGameConditions()
+    private void WinOrPrepare()
     {
-        // Debug.Log("END GAME:");
-        
-        // TODO If enough knowledge, good ending
-        // TODO If not, bad ending
+        // TODO Get actual info from somewhere
+        if (tmpHasEnoughKnowledge)
+            Win();
+        else
+            StartPrepare();
+    }
+
+    private void Win()
+    {
+        Debug.Log("END GAME: WIN");
+        // TODO Good ending
+    }
+
+    private void Lose()
+    {
+        Debug.Log("END GAME: LOSE");
+        // TODO Bad ending
     }
 
 }
